@@ -1,6 +1,6 @@
 <?php
 
-namespace jdavidbakr\MultiServerEvent\Scheduling;
+namespace madlab\CacheLockEvent;
 
 use Illuminate\Console\Scheduling\Schedule as NativeSchedule;
 
