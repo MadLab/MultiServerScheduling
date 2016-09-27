@@ -1,5 +1,5 @@
 {
-    "name": "madlab/CacheLockEvent",
+    "name": "madlab/multi-server-scheduling",
     "type": "library",
     "description": "This package extends Laravel's native Command Event class to add functionality that prevents events from overlapping when ran in multi server environments. This is achieved using Laravel Cache",
     "keywords": [
@@ -21,7 +21,7 @@
     },
     "autoload": {
         "psr-4": {
-            "madlab\\CacheLockEvent\\": "src/"
+            "madlab\\MultiServerScheduling\\": "src/"
         }
     }
 }

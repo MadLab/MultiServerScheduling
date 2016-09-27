@@ -1,6 +1,6 @@
 <?php
 
-namespace madlab\CacheLockEvent;
+namespace madlab\MultiServerScheduling;
 
 use Illuminate\Console\Scheduling\Event as NativeEvent;
 use Illuminate\Contracts\Container\Container;
@@ -68,7 +68,6 @@ class Event extends NativeEvent
         // Check to see if the mutex is found in the cache
         if(Cache::has($this->key)){
             //Someone else has the lock.
-            echo 'lock:' . $this->command . "\n";
             return true;
         }
 
