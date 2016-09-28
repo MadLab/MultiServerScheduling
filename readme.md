@@ -1,12 +1,12 @@
 # Multi Server Scheduling
 
-This package extends Laravel's native task scheduling to include the ability to block events from overlapping when in a multi webserver environment.
+This package extends Laravel's native task scheduling to include the ability to lock events and block them from overlapping when in a multi webserver environment.
 
 It works similarly to Laravel's `withoutOverlapping` feature, except the lockfile is written to Cache as opposed to the local filesystem, and each server generates a unique key to lock the command. 
 
 In order to prevent a condition where a short-running command's lock doesn't last long enough, we are implementing a minimum 10 second break between the completion of the command and its next execution time, so if a command runs every minute but takes between 50 and 59 seconds to complete, the next command will be delayed one more minute. We also automatically expire any locks after 1 hour. 
 
-You may also enable logging to Laravels logfile, so that you can ensure things are working correctly. 
+You may also enable logging to Laravel's logfile, so that you can ensure things are working correctly. 
 
 ## Installation
 
@@ -53,3 +53,7 @@ When intitializing the Scheduler in app\Console\Kernal.php, you may pass in 3 di
 - LOG_LEVEL_NONE: logging is disabled
 - LOG_LEVEL_ABANDONED: a log will be written anytime a server tries to execute a task that has already been running for 10+ minutes
 - LOG_LEVEL_VERBOSE: most detailed, will log anytime a lock is attempted, obtained, or released 
+
+## Support
+
+This was made by Nick Ashley at [MadLab, LLC](http://www.madlab.com) and if you need paid support you can contact us at MadLab.com.
