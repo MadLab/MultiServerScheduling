@@ -5,6 +5,7 @@ namespace madlab\MultiServerScheduling;
 use Illuminate\Console\Scheduling\Event as NativeEvent;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Support\Facades\Cache;
+use Log;
 
 class Event extends NativeEvent
 {
@@ -13,6 +14,12 @@ class Event extends NativeEvent
      * @var string
      */
     protected $serverId;
+
+    /**
+     * Amount of detail that will be sent to the Laravel Log
+     * @var string
+     */
+    protected $logLevel;
 
     /**
      * Hash of the command mutex we will use to uniquely identify the command.
@@ -26,10 +33,11 @@ class Event extends NativeEvent
      * @param  string  $command
      * @return void
      */
-    public function __construct($command)
+    public function __construct($command, $logLevel)
     {
         parent::__construct($command);
         $this->serverId = str_random(32);
+        $this->logLevel = $logLevel;
     }
 
     /**
@@ -66,8 +74,19 @@ class Event extends NativeEvent
 
 
         // Check to see if the mutex is found in the cache
-        if(Cache::has($this->key)){
-            //Someone else has the lock.
+        if($existingEvent = Cache::get($this->key)){
+            //Someone else has the lock. Log event if applicable
+
+            if(in_array($this->logLevel, array(Schedule::LOG_LEVEL_ABANDONED, Schedule::LOG_LEVEL_VERBOSE))){
+                $timeDifference = \Carbon\Carbon::now()->diffInMinutes($existingEvent->get('startDate'), true);
+                if($timeDifference >= 10){
+                    Log::info('MultiServerScheduling: The following task appears to be abandonded: ' . $this->command);
+                }
+                else{
+                    Log::alert('MultiServerScheduling: Unable to acquire lock on ' . $this->command);
+                }
+            }
+
             return true;
         }
 
@@ -83,6 +102,9 @@ class Event extends NativeEvent
         // consider the task 'abandoned' and the lock will be released.
         if(Cache::add($this->key, $eventInfo, \Carbon\Carbon::now()->addHour(1))){
             //we got the lock
+            if($this->logLevel === Schedule::LOG_LEVEL_VERBOSE){
+                Log::info('MultiServerScheduling: Acquired Lock on ' . $this->command);
+            }
             return false;
         }
 
@@ -100,6 +122,10 @@ class Event extends NativeEvent
         if ($this->serverId) {
             $eventInfo = Cache::pull($this->key);
             Cache::put($this->key, $eventInfo, \Carbon\Carbon::now()->addSeconds(10));
+
+            if($this->logLevel === Schedule::LOG_LEVEL_VERBOSE) {
+                Log::info('MultiServerScheduling: Removed Lock on ' . $this->command);
+            }
         }
     }
 }
