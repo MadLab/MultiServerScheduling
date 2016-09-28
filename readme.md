@@ -28,7 +28,7 @@ Now we want to change the default schedule IoC to use this alternate one.  In ap
 protected function defineConsoleSchedule()
 {
     $this->app->instance(
-        'Illuminate\Console\Scheduling\Schedule', $schedule = new \madlab\MultiServerScheduler\Schedule(\madlab\MultiServerScheduler\Schedule::LOG_LEVEL_CONFLICTS)
+        'Illuminate\Console\Scheduling\Schedule', $schedule = new \madlab\MultiServerScheduler\Schedule(\madlab\MultiServerScheduler\Schedule::LOG_LEVELABANDONED)
     );
 
     $this->schedule($schedule);
@@ -49,7 +49,7 @@ This will prevent multiple servers from executing the same event at the same tim
 
 ## Logging
 
-When intitializing the Scheduler in app\Console\Kernal.php, you may pass in 3 different loggin levels:
+When intitializing the Scheduler in app\Console\Kernal.php, you may pass in 3 different logging levels:
 - LOG_LEVEL_NONE: logging is disabled
 - LOG_LEVEL_ABANDONED: a log will be written anytime a server tries to execute a task that has already been running for 10+ minutes
 - LOG_LEVEL_VERBOSE: most detailed, will log anytime a lock is attempted, obtained, or released 
