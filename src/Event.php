@@ -77,12 +77,14 @@ class Event extends NativeEvent
         if($existingEvent = Cache::get($this->key)){
             //Someone else has the lock. Log event if applicable
 
-            if(in_array($this->logLevel, array(Schedule::LOG_LEVEL_ABANDONED, Schedule::LOG_LEVEL_VERBOSE))){
-                $timeDifference = \Carbon\Carbon::now()->diffInMinutes($existingEvent->get('startDate'), true);
-                if($timeDifference >= 10){
+            $timeDifference = \Carbon\Carbon::now()->diffInMinutes($existingEvent->get('startDate'), true);
+            if($timeDifference >= 10) {
+                if (in_array($this->logLevel, array(Schedule::LOG_LEVEL_ABANDONED, Schedule::LOG_LEVEL_VERBOSE))) {
                     Log::info('MultiServerScheduling: The following task appears to be abandonded: ' . $this->command);
                 }
-                else{
+            }
+            else{
+                if($this->logLevel == Schedule::LOG_LEVEL_VERBOSE){
                     Log::alert('MultiServerScheduling: Unable to acquire lock on ' . $this->command);
                 }
             }
