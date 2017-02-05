@@ -3,6 +3,7 @@
 namespace madlab\MultiServerScheduling;
 
 use Illuminate\Console\Scheduling\Schedule as NativeSchedule;
+use Illuminate\Contracts\Cache\Repository as Cache;
 
 class Schedule extends NativeSchedule
 {
@@ -16,8 +17,9 @@ class Schedule extends NativeSchedule
      * Schedule constructor.
      * @param int $logLevel
      */
-    public function __construct($logLevel = self::LOG_LEVEL_NONE)
+    public function __construct(Cache $cache, $logLevel = self::LOG_LEVEL_NONE)
     {
+        parent::__construct($cache);
         $this->logLevel = $logLevel;
     }
 
@@ -34,7 +36,7 @@ class Schedule extends NativeSchedule
             $command .= ' '.$this->compileParameters($parameters);
         }
 
-        $this->events[] = $event = new Event($command, $this->logLevel);
+        $this->events[] = $event = new Event($this->cache, $command, $this->logLevel);
 
         return $event;
     }
