@@ -2,11 +2,11 @@
 
 This package extends Laravel's native task scheduling to include the ability to lock events and block them from overlapping when in a multi webserver environment.
 
-It works similarly to Laravel's `withoutOverlapping` feature, except the lockfile is written to Cache as opposed to the local filesystem, and each server generates a unique key to lock the command. 
+It works similarly to Laravel's `withoutOverlapping` feature, except the lockfile is written to Cache as opposed to the local filesystem, and each server generates a unique key to lock the command.
 
-In order to prevent a condition where a short-running command's lock doesn't last long enough, we are implementing a minimum 10 second break between the completion of the command and its next execution time, so if a command runs every minute but takes between 50 and 59 seconds to complete, the next command will be delayed one more minute. We also automatically expire any locks after 1 hour. 
+In order to prevent a condition where a short-running command's lock doesn't last long enough, we are implementing a minimum 10 second break between the completion of the command and its next execution time, so if a command runs every minute but takes between 50 and 59 seconds to complete, the next command will be delayed one more minute. We also automatically expire any locks after 1 hour.
 
-You may also enable logging to Laravel's logfile, so that you can ensure things are working correctly. 
+You may also enable logging to Laravel's logfile, so that you can ensure things are working correctly.
 
 ## Installation
 
@@ -20,6 +20,10 @@ The new scheduler uses Laravel's cache to track which server is currently execut
 Now we want to change the default schedule IoC to use this alternate one.  In app\Console\Kernel.php add the following function:
 
 ```php
+
+use Illuminate\Contracts\Cache\Repository as Cache;
+use madlab\MultiServerScheduling\Schedule as MultiServerSchedule;
+
 /**
  * Define the application's command schedule.
  *
@@ -27,9 +31,12 @@ Now we want to change the default schedule IoC to use this alternate one.  In ap
  */
 protected function defineConsoleSchedule()
 {
-    $this->app->instance(
-        'Illuminate\Console\Scheduling\Schedule', $schedule = new \madlab\MultiServerScheduler\Schedule(\madlab\MultiServerScheduler\Schedule::LOG_LEVELABANDONED)
-    );
+	$this->app->instance(
+		Schedule::class, $schedule = new MultiServerSchedule(
+			$this->app[Cache::class],
+			MultiServerSchedule::LOG_LEVEL_ABANDONED
+		)
+	);
 
     $this->schedule($schedule);
 }
@@ -52,7 +59,7 @@ This will prevent multiple servers from executing the same event at the same tim
 When intitializing the Scheduler in app\Console\Kernal.php, you may pass in 3 different logging levels:
 - LOG_LEVEL_NONE: logging is disabled
 - LOG_LEVEL_ABANDONED: a log will be written anytime a server tries to execute a task that has already been running for 10+ minutes
-- LOG_LEVEL_VERBOSE: most detailed, will log anytime a lock is attempted, obtained, or released 
+- LOG_LEVEL_VERBOSE: most detailed, will log anytime a lock is attempted, obtained, or released
 
 ## Support
 
